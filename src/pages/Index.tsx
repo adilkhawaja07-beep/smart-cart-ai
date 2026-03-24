@@ -15,12 +15,24 @@ import categoryFruits from "@/assets/category-fruits.jpg";
 import categoryVegetables from "@/assets/category-vegetables.jpg";
 import categoryDairy from "@/assets/category-dairy.jpg";
 import categoryBakery from "@/assets/category-bakery.jpg";
+import categoryMeatSeafood from "@/assets/category-meat-seafood.jpg";
+import categoryBeverages from "@/assets/category-beverages.jpg";
+import categorySnacks from "@/assets/category-snacks.jpg";
+import categoryPantry from "@/assets/category-pantry.jpg";
+import categoryFrozen from "@/assets/category-frozen.jpg";
+import categoryOrganic from "@/assets/category-organic.jpg";
 
 const categoryImages: Record<string, string> = {
   "Fresh Fruits": categoryFruits,
-  "Vegetables": categoryVegetables,
+  Vegetables: categoryVegetables,
   "Dairy & Eggs": categoryDairy,
-  "Bakery": categoryBakery,
+  Bakery: categoryBakery,
+  "Meat & Seafood": categoryMeatSeafood,
+  Beverages: categoryBeverages,
+  "Snacks & Chips": categorySnacks,
+  "Pantry & Grains": categoryPantry,
+  "Frozen Foods": categoryFrozen,
+  "Organic & Health": categoryOrganic,
 };
 
 const Index = () => {
