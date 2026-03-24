@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Leaf } from "lucide-react";
+import { Loader2, ArrowLeft, ShieldCheck, ShoppingBag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
@@ -15,6 +16,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
+  const [accountType, setAccountType] = useState<"customer" | "admin">("customer");
 
   if (loading) {
     return (
@@ -37,6 +39,13 @@ const Auth = () => {
       } else {
         const { error } = await signUp(form.email, form.password, form.fullName);
         if (error) throw error;
+
+        // If admin was selected, we store preference in metadata; role will be assigned after email confirmation & first login
+        if (accountType === "admin") {
+          // Store the preference so we can assign on first login
+          localStorage.setItem("pending_admin_role", "true");
+        }
+
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account before signing in.",
@@ -80,15 +89,49 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div>
-                  <Label>Full Name</Label>
-                  <Input
-                    required
-                    value={form.fullName}
-                    onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                    placeholder="John Doe"
-                  />
-                </div>
+                <>
+                  <div>
+                    <Label>Full Name</Label>
+                    <Input
+                      required
+                      value={form.fullName}
+                      onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                      placeholder="John Doe"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="mb-2 block">Account Type</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setAccountType("customer")}
+                        className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
+                          accountType === "customer"
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border text-muted-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        <ShoppingBag className="h-6 w-6" />
+                        <span className="text-sm font-semibold">Customer</span>
+                        <span className="text-[11px] leading-tight opacity-70">Shop & order</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAccountType("admin")}
+                        className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
+                          accountType === "admin"
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border text-muted-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        <ShieldCheck className="h-6 w-6" />
+                        <span className="text-sm font-semibold">Admin</span>
+                        <span className="text-[11px] leading-tight opacity-70">Manage store</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
               <div>
                 <Label>Email</Label>
