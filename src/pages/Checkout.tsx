@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { placeOrder } from "@/lib/orderService";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,16 +16,48 @@ const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
   const { toast } = useToast();
   const [placed, setPlaced] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [form, setForm] = useState({
+    firstName: "", lastName: "", address: "", city: "", zipCode: "", email: "",
+    cardNumber: "", expiry: "", cvc: "",
+  });
 
   const deliveryFee = totalPrice >= 50 ? 0 : 4.99;
   const tax = totalPrice * 0.08;
   const grandTotal = totalPrice + deliveryFee + tax;
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const updateForm = (field: string, value: string) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPlaced(true);
-    clearCart();
-    toast({ title: "Order placed!", description: "Your fresh groceries are on the way 🥬" });
+    setSubmitting(true);
+    try {
+      await placeOrder(
+        items,
+        {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          address: form.address,
+          city: form.city,
+          zipCode: form.zipCode,
+          email: form.email || undefined,
+        },
+        totalPrice,
+        deliveryFee,
+        tax,
+        grandTotal
+      );
+      setPlaced(true);
+      clearCart();
+      toast({ title: "Order placed!", description: "Your fresh groceries are on the way 🥬" });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Order failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (placed) {
@@ -72,34 +105,33 @@ const Checkout = () => {
         <h1 className="mb-8 font-display text-3xl font-bold text-foreground">Checkout</h1>
 
         <div className="grid gap-8 lg:grid-cols-5">
-          {/* Form */}
           <form onSubmit={handlePlaceOrder} className="space-y-6 lg:col-span-3">
             <div className="rounded-2xl border border-border bg-card p-6">
               <h2 className="mb-4 font-display text-lg font-semibold text-card-foreground">Delivery Details</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div><Label>First Name</Label><Input required placeholder="John" /></div>
-                <div><Label>Last Name</Label><Input required placeholder="Doe" /></div>
-                <div className="sm:col-span-2"><Label>Address</Label><Input required placeholder="123 Fresh St" /></div>
-                <div><Label>City</Label><Input required placeholder="San Francisco" /></div>
-                <div><Label>ZIP Code</Label><Input required placeholder="94102" /></div>
+                <div><Label>First Name</Label><Input required value={form.firstName} onChange={(e) => updateForm("firstName", e.target.value)} placeholder="John" /></div>
+                <div><Label>Last Name</Label><Input required value={form.lastName} onChange={(e) => updateForm("lastName", e.target.value)} placeholder="Doe" /></div>
+                <div className="sm:col-span-2"><Label>Email (optional)</Label><Input type="email" value={form.email} onChange={(e) => updateForm("email", e.target.value)} placeholder="john@example.com" /></div>
+                <div className="sm:col-span-2"><Label>Address</Label><Input required value={form.address} onChange={(e) => updateForm("address", e.target.value)} placeholder="123 Fresh St" /></div>
+                <div><Label>City</Label><Input required value={form.city} onChange={(e) => updateForm("city", e.target.value)} placeholder="San Francisco" /></div>
+                <div><Label>ZIP Code</Label><Input required value={form.zipCode} onChange={(e) => updateForm("zipCode", e.target.value)} placeholder="94102" /></div>
               </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-6">
               <h2 className="mb-4 font-display text-lg font-semibold text-card-foreground">Payment</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2"><Label>Card Number</Label><Input required placeholder="4242 4242 4242 4242" /></div>
-                <div><Label>Expiry</Label><Input required placeholder="MM/YY" /></div>
-                <div><Label>CVC</Label><Input required placeholder="123" /></div>
+                <div className="sm:col-span-2"><Label>Card Number</Label><Input required value={form.cardNumber} onChange={(e) => updateForm("cardNumber", e.target.value)} placeholder="4242 4242 4242 4242" /></div>
+                <div><Label>Expiry</Label><Input required value={form.expiry} onChange={(e) => updateForm("expiry", e.target.value)} placeholder="MM/YY" /></div>
+                <div><Label>CVC</Label><Input required value={form.cvc} onChange={(e) => updateForm("cvc", e.target.value)} placeholder="123" /></div>
               </div>
             </div>
 
-            <Button type="submit" size="lg" className="w-full rounded-full">
-              Place Order — ${grandTotal.toFixed(2)}
+            <Button type="submit" size="lg" className="w-full rounded-full" disabled={submitting}>
+              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...</> : `Place Order — $${grandTotal.toFixed(2)}`}
             </Button>
           </form>
 
-          {/* Summary */}
           <div className="lg:col-span-2">
             <div className="sticky top-24 rounded-2xl border border-border bg-card p-6">
               <h2 className="mb-4 font-display text-lg font-semibold text-card-foreground">Order Summary</h2>
@@ -111,28 +143,17 @@ const Checkout = () => {
                       <p className="text-sm font-medium text-card-foreground line-clamp-1">{item.product.name}</p>
                       <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
-                    <span className="text-sm font-semibold text-foreground">
-                      ${(item.product.price * item.quantity).toFixed(2)}
-                    </span>
+                    <span className="text-sm font-semibold text-foreground">${(item.product.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
               <Separator className="my-4" />
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Subtotal</span><span>${totalPrice.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Delivery</span>
-                  <span>{deliveryFee === 0 ? "Free" : `$${deliveryFee.toFixed(2)}`}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Tax</span><span>${tax.toFixed(2)}</span>
-                </div>
+                <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${totalPrice.toFixed(2)}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Delivery</span><span>{deliveryFee === 0 ? "Free" : `$${deliveryFee.toFixed(2)}`}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Tax</span><span>${tax.toFixed(2)}</span></div>
                 <Separator />
-                <div className="flex justify-between text-base font-bold text-foreground">
-                  <span>Total</span><span>${grandTotal.toFixed(2)}</span>
-                </div>
+                <div className="flex justify-between text-base font-bold text-foreground"><span>Total</span><span>${grandTotal.toFixed(2)}</span></div>
               </div>
             </div>
           </div>
