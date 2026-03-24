@@ -10,6 +10,7 @@ import {
   ArrowUpRight, ArrowDownRight, Target, Percent, PlusCircle,
 } from "lucide-react";
 import AddProductForm from "@/components/AddProductForm";
+import AddCategoryForm from "@/components/AddCategoryForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
