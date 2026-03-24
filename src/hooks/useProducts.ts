@@ -2,6 +2,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Product } from "@/components/ProductCard";
 
+import categoryFruits from "@/assets/category-fruits.jpg";
+import categoryVegetables from "@/assets/category-vegetables.jpg";
+import categoryDairy from "@/assets/category-dairy.jpg";
+import categoryBakery from "@/assets/category-bakery.jpg";
+
+const categoryFallbackImages: Record<string, string> = {
+  "Fresh Fruits": categoryFruits,
+  Vegetables: categoryVegetables,
+  "Dairy & Eggs": categoryDairy,
+  Bakery: categoryBakery,
+};
+
 export interface DbProduct {
   id: string;
   name: string;
