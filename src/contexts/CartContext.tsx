@@ -21,11 +21,30 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const STORAGE_KEY = "freshcart-cart";
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidCartItem(value: unknown): value is CartItem {
+  if (!value || typeof value !== "object") return false;
+  const item = value as CartItem;
+  return (
+    Number.isFinite(item.quantity) &&
+    item.quantity > 0 &&
+    !!item.product &&
+    typeof item.product.id === "string" &&
+    UUID_REGEX.test(item.product.id) &&
+    typeof item.product.name === "string" &&
+    Number.isFinite(item.product.price)
+  );
+}
 
 function loadCart(): CartItem[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isValidCartItem);
   } catch {
     return [];
   }

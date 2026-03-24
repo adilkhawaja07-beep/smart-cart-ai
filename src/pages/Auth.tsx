@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
 const Auth = () => {
-  const { user, loading, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp, resendConfirmationEmail } = useAuth();
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +43,17 @@ const Auth = () => {
         });
       }
     } catch (err: any) {
+      if (/email not confirmed/i.test(err?.message || "")) {
+        const { error: resendError } = await resendConfirmationEmail(form.email);
+        toast({
+          title: "Email not verified",
+          description: resendError
+            ? "Please check your inbox/spam and click the verification link before signing in."
+            : "We sent a fresh verification email. Please verify your email, then sign in.",
+          variant: "destructive",
+        });
+        return;
+      }
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setSubmitting(false);

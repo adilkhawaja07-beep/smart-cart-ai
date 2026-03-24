@@ -64,5 +64,16 @@ export function useAuth() {
     await supabase.auth.signOut();
   };
 
-  return { user, session, loading, isAdmin, signUp, signIn, signOut };
+  const resendConfirmationEmail = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    return { error };
+  };
+
+  return { user, session, loading, isAdmin, signUp, signIn, signOut, resendConfirmationEmail };
 }
