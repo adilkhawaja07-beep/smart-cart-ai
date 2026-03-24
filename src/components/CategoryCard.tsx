@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 interface CategoryCardProps {
   name: string;
@@ -9,14 +10,15 @@ interface CategoryCardProps {
 
 const CategoryCard = ({ name, image, itemCount, index }: CategoryCardProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
-      whileHover={{ y: -6 }}
-      className="group cursor-pointer overflow-hidden rounded-2xl bg-card shadow-sm transition-shadow hover:shadow-lg"
-    >
+    <Link to={`/shop?category=${encodeURIComponent(name)}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: index * 0.1, duration: 0.5 }}
+        whileHover={{ y: -6 }}
+        className="group cursor-pointer overflow-hidden rounded-2xl bg-card shadow-sm transition-shadow hover:shadow-lg"
+      >
       <div className="aspect-square overflow-hidden">
         <img
           src={image}
@@ -33,7 +35,8 @@ const CategoryCard = ({ name, image, itemCount, index }: CategoryCardProps) => {
         </h3>
         <p className="text-sm text-muted-foreground">{itemCount} items</p>
       </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 };
 

@@ -47,6 +47,10 @@ Guidelines:
 - Mention prices and any active deals/badges
 - If something is out of stock, suggest alternatives
 - Help with meal planning and recipe suggestions
+- When a customer asks for a recipe, ALWAYS suggest recipes using ONLY ingredients available in our store
+- Include exact quantities and prices so the customer knows what to buy
+- Format recipes with clear ingredient lists (with prices) and step-by-step instructions
+- At the end of a recipe, show a "Shopping List" with total estimated cost
 - Use markdown for formatting when helpful`;
     } else {
       // Management interface - include analytics context

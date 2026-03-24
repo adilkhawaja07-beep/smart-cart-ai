@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import heroProduce from "@/assets/hero-produce.jpg";
 
 const HeroSection = () => {
@@ -37,12 +38,16 @@ const HeroSection = () => {
             all curated with care and powered by smart recommendations.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button size="lg" className="gap-2 rounded-full bg-primary px-8 text-primary-foreground shadow-lg hover:bg-primary/90">
-              Shop Now <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline" className="rounded-full border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-              Browse Categories
-            </Button>
+            <Link to="/shop">
+              <Button size="lg" className="gap-2 rounded-full bg-primary px-8 text-primary-foreground shadow-lg hover:bg-primary/90">
+                Shop Now <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link to="/categories">
+              <Button size="lg" variant="outline" className="rounded-full border-primary-foreground/30 text-foreground bg-background/80 hover:bg-background">
+                Browse Categories
+              </Button>
+            </Link>
           </div>
         </motion.div>
       </div>

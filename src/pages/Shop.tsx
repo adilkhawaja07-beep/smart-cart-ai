@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -13,10 +13,17 @@ type SortOption = "name" | "price-asc" | "price-desc" | "newest";
 const Shop = () => {
   const { data: products, isLoading } = useProducts();
   const { data: categories } = useCategories();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOption>("newest");
   const [inStockOnly, setInStockOnly] = useState(false);
+
+  // Read category from URL on mount
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    if (cat) setSelectedCategory(cat);
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     if (!products) return [];
