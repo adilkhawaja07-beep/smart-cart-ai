@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ImageUploadProps {
@@ -17,9 +16,10 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
   const inputId = useRef(`img-upload-${Math.random().toString(36).slice(2)}`).current;
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Sync with external currentUrl changes
   useEffect(() => {
-    if (currentUrl) setPreview(currentUrl);
+    if (currentUrl !== undefined) {
+      setPreview(currentUrl || null);
+    }
   }, [currentUrl]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,21 +36,25 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
       const ext = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-      const { error } = await supabase.storage.from(bucket).upload(fileName, file);
+      const uploadResult = await Promise.race([
+        supabase.storage.from(bucket).upload(fileName, file),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Upload timed out. Please try again.")), 20000)
+        ),
+      ]);
+
+      const { error } = uploadResult;
       if (error) throw error;
 
       const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
       const publicUrl = urlData.publicUrl;
-      console.log("Image uploaded successfully:", publicUrl);
       setPreview(publicUrl);
       onUploaded(publicUrl);
       toast({ title: "Image uploaded", description: "Image uploaded successfully" });
     } catch (err: any) {
-      console.error("Upload error:", err);
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
       setUploading(false);
-      // Reset file input so the same file can be re-selected
       if (fileRef.current) fileRef.current.value = "";
     }
   };
@@ -69,9 +73,9 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
             src={preview}
             alt="Preview"
             className="h-24 w-24 rounded-lg border border-border object-cover"
-            onError={() => {
-              // If image fails to load, still keep the URL but show a placeholder
-              console.warn("Preview image failed to load:", preview);
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/placeholder.svg";
             }}
           />
           <button

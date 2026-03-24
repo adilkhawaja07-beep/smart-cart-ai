@@ -63,9 +63,15 @@ const Categories = () => {
                   >
                     <div className="aspect-[16/10] overflow-hidden">
                       <img
-                        src={categoryImages[cat.name] || cat.image_url || "/placeholder.svg"}
+                        src={cat.image_url || categoryImages[cat.name] || "/placeholder.svg"}
                         alt={cat.name}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
                       />
                     </div>
                     <div className="p-5">

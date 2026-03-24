@@ -63,7 +63,12 @@ const AddCategoryForm = ({ onCategoryAdded }: AddCategoryFormProps) => {
           </div>
           <div className="space-y-1.5">
             <Label>Category Image</Label>
-            <ImageUpload bucket="category-images" onUploaded={setImageUrl} label="Upload category image" />
+            <ImageUpload bucket="category-images" onUploaded={setImageUrl} currentUrl={imageUrl} label="Upload category image" />
+            <Input
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="Or paste image URL"
+            />
           </div>
           <div className="flex items-end">
             <Button type="submit" disabled={loading} className="w-full">
