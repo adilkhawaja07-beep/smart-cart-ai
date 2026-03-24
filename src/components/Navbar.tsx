@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ShoppingCart, Search, Menu, X, User } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { ShoppingCart, Search, Menu, X, User, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/logo.png";
 
 const navLinks = [
@@ -16,6 +17,8 @@ const navLinks = [
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { totalItems, setIsCartOpen } = useCart();
+  const { user, isAdmin, signOut } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -27,19 +30,52 @@ const Navbar = () => {
 
         <nav className="hidden items-center gap-6 md:flex">
           {navLinks.map((link) => (
-            <Link key={link.label} to={link.href} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+            <Link
+              key={link.label}
+              to={link.href}
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                location.pathname === link.href ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
               {link.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link
+              to="/dashboard"
+              className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
+                location.pathname === "/dashboard" ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
             <Search className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-            <User className="h-5 w-5" />
-          </Button>
+
+          {user ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-primary"
+              onClick={() => signOut()}
+              title="Sign out"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
+
           <Button
             variant="ghost"
             size="icon"
@@ -78,6 +114,16 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              {isAdmin && (
+                <Link to="/dashboard" className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary" onClick={() => setMobileOpen(false)}>
+                  <LayoutDashboard className="h-4 w-4" /> Dashboard
+                </Link>
+              )}
+              {!user && (
+                <Link to="/auth" className="text-sm font-medium text-primary hover:underline" onClick={() => setMobileOpen(false)}>
+                  Sign In / Sign Up
+                </Link>
+              )}
             </div>
           </motion.nav>
         )}
