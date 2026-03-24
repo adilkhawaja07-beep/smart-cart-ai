@@ -14,7 +14,13 @@ interface ImageUploadProps {
 const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }: ImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
+  const inputId = useRef(`img-upload-${Math.random().toString(36).slice(2)}`).current;
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Sync with external currentUrl changes
+  useEffect(() => {
+    if (currentUrl) setPreview(currentUrl);
+  }, [currentUrl]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,13 +40,18 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
       if (error) throw error;
 
       const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-      setPreview(urlData.publicUrl);
-      onUploaded(urlData.publicUrl);
+      const publicUrl = urlData.publicUrl;
+      console.log("Image uploaded successfully:", publicUrl);
+      setPreview(publicUrl);
+      onUploaded(publicUrl);
       toast({ title: "Image uploaded", description: "Image uploaded successfully" });
     } catch (err: any) {
+      console.error("Upload error:", err);
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
       setUploading(false);
+      // Reset file input so the same file can be re-selected
+      if (fileRef.current) fileRef.current.value = "";
     }
   };
 
@@ -54,7 +65,15 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
     <div className="space-y-2">
       {preview ? (
         <div className="relative inline-block">
-          <img src={preview} alt="Preview" className="h-24 w-24 rounded-lg border border-border object-cover" />
+          <img
+            src={preview}
+            alt="Preview"
+            className="h-24 w-24 rounded-lg border border-border object-cover"
+            onError={() => {
+              // If image fails to load, still keep the URL but show a placeholder
+              console.warn("Preview image failed to load:", preview);
+            }}
+          />
           <button
             type="button"
             onClick={handleClear}
@@ -64,21 +83,30 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
           </button>
         </div>
       ) : (
-        <div
-          onClick={() => fileRef.current?.click()}
+        <label
+          htmlFor={inputId}
           className="flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/30 text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50"
         >
           {uploading ? (
-            <span className="text-xs">Uploading…</span>
+            <span className="text-xs animate-pulse">Uploading…</span>
           ) : (
             <>
-              <ImageIcon className="h-6 w-6" />
+              <Upload className="h-6 w-6" />
               <span className="text-xs">{label}</span>
+              <span className="text-[10px] opacity-60">Click to browse</span>
             </>
           )}
-        </div>
+        </label>
       )}
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+      <input
+        ref={fileRef}
+        id={inputId}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleUpload}
+        disabled={uploading}
+      />
     </div>
   );
 };
