@@ -197,6 +197,7 @@ const Dashboard = () => {
             { key: "sales", label: "Sales", icon: DollarSign },
             { key: "inventory", label: "Inventory", icon: Package },
             { key: "orders", label: "Orders", icon: ShoppingBag },
+            { key: "products", label: "Add Products", icon: PlusCircle },
             { key: "ai", label: "AI Insights", icon: MessageCircle },
           ].map((tab) => (
             <button
