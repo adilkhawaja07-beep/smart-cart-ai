@@ -37,14 +37,8 @@ const Auth = () => {
         if (error) throw error;
         toast({ title: "Welcome back!" });
       } else {
-        const { error } = await signUp(form.email, form.password, form.fullName);
+        const { error } = await signUp(form.email, form.password, form.fullName, accountType);
         if (error) throw error;
-
-        // If admin was selected, we store preference in metadata; role will be assigned after email confirmation & first login
-        if (accountType === "admin") {
-          // Store the preference so we can assign on first login
-          localStorage.setItem("pending_admin_role", "true");
-        }
 
         toast({
           title: "Account created!",
