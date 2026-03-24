@@ -35,7 +35,8 @@ const CategoryCard = ({ name, image, itemCount, index }: CategoryCardProps) => {
         </h3>
         <p className="text-sm text-muted-foreground">{itemCount} items</p>
       </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 };
 
