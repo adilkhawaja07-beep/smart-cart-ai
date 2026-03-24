@@ -70,7 +70,7 @@ const Index = () => {
                 <CategoryCard
                   key={cat.id}
                   name={cat.name}
-                  image={categoryImages[cat.name] || cat.image_url || "/placeholder.svg"}
+                  image={cat.image_url || categoryImages[cat.name] || "/placeholder.svg"}
                   itemCount={products?.filter((p) => p.category === cat.name).length || 0}
                   index={i}
                 />

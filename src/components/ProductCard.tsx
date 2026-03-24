@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,11 @@ interface ProductCardProps {
 const ProductCard = ({ product, index }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toast } = useToast();
+  const [imageSrc, setImageSrc] = useState(product.image || "/placeholder.svg");
+
+  useEffect(() => {
+    setImageSrc(product.image || "/placeholder.svg");
+  }, [product.image]);
 
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
@@ -45,12 +51,14 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
     >
       <div className="relative aspect-square overflow-hidden bg-muted">
         <img
-          src={product.image}
+          src={imageSrc}
           alt={product.name}
           loading="lazy"
+          decoding="async"
           width={400}
           height={400}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={() => setImageSrc("/placeholder.svg")}
         />
         <div className="absolute left-3 top-3 flex flex-col gap-1">
           {product.badge && (

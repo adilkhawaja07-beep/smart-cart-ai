@@ -94,7 +94,12 @@ const AddProductForm = ({ onProductAdded }: AddProductFormProps) => {
           </div>
           <div className="space-y-1.5">
             <Label>Product Image</Label>
-            <ImageUpload bucket="product-images" onUploaded={setImageUrl} label="Upload product photo" />
+            <ImageUpload bucket="product-images" onUploaded={setImageUrl} currentUrl={imageUrl} label="Upload product photo" />
+            <Input
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="Or paste image URL"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Selling Price *</Label>

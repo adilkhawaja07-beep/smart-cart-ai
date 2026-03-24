@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -9,6 +10,12 @@ interface CategoryCardProps {
 }
 
 const CategoryCard = ({ name, image, itemCount, index }: CategoryCardProps) => {
+  const [imageSrc, setImageSrc] = useState(image || "/placeholder.svg");
+
+  useEffect(() => {
+    setImageSrc(image || "/placeholder.svg");
+  }, [image]);
+
   return (
     <Link to={`/shop?category=${encodeURIComponent(name)}`}>
       <motion.div
@@ -19,22 +26,24 @@ const CategoryCard = ({ name, image, itemCount, index }: CategoryCardProps) => {
         whileHover={{ y: -6 }}
         className="group cursor-pointer overflow-hidden rounded-2xl bg-card shadow-sm transition-shadow hover:shadow-lg"
       >
-      <div className="aspect-square overflow-hidden">
-        <img
-          src={image}
-          alt={name}
-          loading="lazy"
-          width={640}
-          height={640}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-      </div>
-      <div className="p-4 text-center">
-        <h3 className="font-display text-lg font-semibold text-card-foreground">
-          {name}
-        </h3>
-        <p className="text-sm text-muted-foreground">{itemCount} items</p>
-      </div>
+        <div className="aspect-square overflow-hidden">
+          <img
+            src={imageSrc}
+            alt={name}
+            loading="lazy"
+            decoding="async"
+            width={640}
+            height={640}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={() => setImageSrc("/placeholder.svg")}
+          />
+        </div>
+        <div className="p-4 text-center">
+          <h3 className="font-display text-lg font-semibold text-card-foreground">
+            {name}
+          </h3>
+          <p className="text-sm text-muted-foreground">{itemCount} items</p>
+        </div>
       </motion.div>
     </Link>
   );
