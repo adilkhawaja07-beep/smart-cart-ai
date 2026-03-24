@@ -4,12 +4,29 @@ import FeaturesStrip from "@/components/FeaturesStrip";
 import CategoryCard from "@/components/CategoryCard";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
-import { categories, featuredProducts } from "@/data/products";
+import { useProducts, useCategories } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+
+// Fallback images for categories that don't have image_url set
+import categoryFruits from "@/assets/category-fruits.jpg";
+import categoryVegetables from "@/assets/category-vegetables.jpg";
+import categoryDairy from "@/assets/category-dairy.jpg";
+import categoryBakery from "@/assets/category-bakery.jpg";
+
+const categoryImages: Record<string, string> = {
+  "Fresh Fruits": categoryFruits,
+  "Vegetables": categoryVegetables,
+  "Dairy & Eggs": categoryDairy,
+  "Bakery": categoryBakery,
+};
 
 const Index = () => {
+  const { data: products, isLoading: productsLoading } = useProducts();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -24,19 +41,29 @@ const Index = () => {
               <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
                 Shop by Category
               </h2>
-              <p className="mt-2 text-muted-foreground">
-                Browse our carefully curated selection
-              </p>
+              <p className="mt-2 text-muted-foreground">Browse our carefully curated selection</p>
             </div>
-            <Button variant="ghost" className="hidden gap-1 text-primary md:flex">
-              View All <ArrowRight className="h-4 w-4" />
-            </Button>
+            <Link to="/shop">
+              <Button variant="ghost" className="hidden gap-1 text-primary md:flex">
+                View All <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {categories.map((cat, i) => (
-              <CategoryCard key={cat.name} {...cat} index={i} />
-            ))}
-          </div>
+          {categoriesLoading ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              {categories?.map((cat, i) => (
+                <CategoryCard
+                  key={cat.id}
+                  name={cat.name}
+                  image={categoryImages[cat.name] || cat.image_url || "/placeholder.svg"}
+                  itemCount={products?.filter((p) => p.category === cat.name).length || 0}
+                  index={i}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -48,19 +75,23 @@ const Index = () => {
               <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
                 Featured Products
               </h2>
-              <p className="mt-2 text-muted-foreground">
-                Hand-picked favorites this week
-              </p>
+              <p className="mt-2 text-muted-foreground">Hand-picked favorites this week</p>
             </div>
-            <Button variant="ghost" className="hidden gap-1 text-primary md:flex">
-              Shop All <ArrowRight className="h-4 w-4" />
-            </Button>
+            <Link to="/shop">
+              <Button variant="ghost" className="hidden gap-1 text-primary md:flex">
+                Shop All <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {featuredProducts.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
-            ))}
-          </div>
+          {productsLoading ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              {products?.slice(0, 8).map((product, i) => (
+                <ProductCard key={product.id} product={product} index={i} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -85,10 +116,7 @@ const Index = () => {
                 placeholder="Enter your email"
                 className="flex-1 rounded-full border-0 bg-primary-foreground/20 px-5 py-3 text-sm text-primary-foreground placeholder:text-primary-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary-foreground/30"
               />
-              <Button
-                size="lg"
-                className="rounded-full bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-              >
+              <Button size="lg" className="rounded-full bg-primary-foreground text-primary hover:bg-primary-foreground/90">
                 Subscribe
               </Button>
             </div>
