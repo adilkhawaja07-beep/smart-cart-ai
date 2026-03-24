@@ -48,7 +48,7 @@ const Navbar = () => {
               }`}
             >
               <LayoutDashboard className="h-4 w-4" />
-              Dashboard
+              Management Console
             </Link>
           )}
         </nav>
@@ -116,7 +116,7 @@ const Navbar = () => {
               ))}
               {isAdmin && (
                 <Link to="/dashboard" className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary" onClick={() => setMobileOpen(false)}>
-                  <LayoutDashboard className="h-4 w-4" /> Dashboard
+                  <LayoutDashboard className="h-4 w-4" /> Management Console
                 </Link>
               )}
               {!user && (
