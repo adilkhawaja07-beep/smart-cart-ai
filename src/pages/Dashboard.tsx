@@ -81,7 +81,7 @@ const Dashboard = () => {
   const [dailySales, setDailySales] = useState<DailySales[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"overview" | "sales" | "inventory" | "orders" | "ai">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "sales" | "inventory" | "orders" | "products" | "ai">("overview");
 
   useEffect(() => { fetchData(); }, []);
 
