@@ -7,8 +7,9 @@ import {
   BarChart3, Package, DollarSign, TrendingUp, AlertTriangle,
   Send, ArrowLeft, ShoppingBag, MessageCircle, Trash2,
   CheckCircle, Clock, Truck, XCircle, Activity, Users,
-  ArrowUpRight, ArrowDownRight, Target, Percent,
+  ArrowUpRight, ArrowDownRight, Target, Percent, PlusCircle,
 } from "lucide-react";
+import AddProductForm from "@/components/AddProductForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
