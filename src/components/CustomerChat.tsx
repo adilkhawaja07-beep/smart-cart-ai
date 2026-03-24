@@ -66,9 +66,17 @@ const CustomerChat = () => {
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
-                <div className="flex h-full flex-col items-center justify-center text-center">
+                <div className="flex h-full flex-col items-center justify-center text-center px-4">
                   <MessageCircle className="mb-3 h-10 w-10 text-muted-foreground/30" />
-                  <p className="text-sm text-muted-foreground">Hi! I can help you find products, check availability, or suggest recipes. What are you looking for?</p>
+                  <p className="text-sm text-muted-foreground mb-3">Hi! I can help you find products, check availability, or suggest recipes. What are you looking for?</p>
+                  <div className="flex flex-wrap gap-1.5 justify-center">
+                    {["Suggest a recipe", "What's on sale?", "What fruits are available?"].map((q) => (
+                      <button key={q} onClick={() => send(q)}
+                        className="rounded-full border border-border bg-muted/50 px-2.5 py-1 text-xs text-foreground hover:bg-accent transition-colors">
+                        {q}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               {messages.map((msg, i) => (
