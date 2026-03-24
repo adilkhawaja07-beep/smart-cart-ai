@@ -43,7 +43,7 @@ export function mapDbProduct(p: DbProduct): Product {
     name: p.name,
     price: Number(p.price),
     originalPrice: p.original_price ? Number(p.original_price) : undefined,
-    image: p.image_url || "/placeholder.svg",
+    image: p.image_url || categoryFallbackImages[p.categories?.name || ""] || "/placeholder.svg",
     category: p.categories?.name || "Uncategorized",
     badge: p.badge || undefined,
     unit: p.unit,
