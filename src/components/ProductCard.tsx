@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Product {
   id: string;
@@ -21,9 +23,17 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, index }: ProductCardProps) => {
+  const { addItem } = useCart();
+  const { toast } = useToast();
+
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0;
+
+  const handleAdd = () => {
+    addItem(product);
+    toast({ title: `${product.name} added`, description: "Item added to your cart" });
+  };
 
   return (
     <motion.div
@@ -33,7 +43,6 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
       transition={{ delay: index * 0.08, duration: 0.5 }}
       className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-lg"
     >
-      {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-muted">
         <img
           src={product.image}
@@ -43,24 +52,17 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
           height={400}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-1">
           {product.badge && (
-            <Badge className="bg-primary text-primary-foreground">
-              {product.badge}
-            </Badge>
+            <Badge className="bg-primary text-primary-foreground">{product.badge}</Badge>
           )}
-          {discount > 0 && (
-            <Badge variant="destructive">-{discount}%</Badge>
-          )}
+          {discount > 0 && <Badge variant="destructive">-{discount}%</Badge>}
         </div>
-        {/* Wishlist */}
         <button className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-all hover:text-destructive group-hover:opacity-100">
           <Heart className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Info */}
       <div className="p-4">
         <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {product.category}
@@ -69,9 +71,7 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
           {product.name}
         </h3>
         <div className="mb-3 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-primary">
-            ${product.price.toFixed(2)}
-          </span>
+          <span className="text-lg font-bold text-primary">${product.price.toFixed(2)}</span>
           {product.originalPrice && (
             <span className="text-sm text-muted-foreground line-through">
               ${product.originalPrice.toFixed(2)}
@@ -83,6 +83,7 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
           size="sm"
           className="w-full gap-2 rounded-full"
           disabled={!product.inStock}
+          onClick={handleAdd}
         >
           <ShoppingCart className="h-4 w-4" />
           {product.inStock ? "Add to Cart" : "Out of Stock"}
