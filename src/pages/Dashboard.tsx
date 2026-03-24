@@ -7,8 +7,9 @@ import {
   BarChart3, Package, DollarSign, TrendingUp, AlertTriangle,
   Send, ArrowLeft, ShoppingBag, MessageCircle, Trash2,
   CheckCircle, Clock, Truck, XCircle, Activity, Users,
-  ArrowUpRight, ArrowDownRight, Target, Percent,
+  ArrowUpRight, ArrowDownRight, Target, Percent, PlusCircle,
 } from "lucide-react";
+import AddProductForm from "@/components/AddProductForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,7 +81,7 @@ const Dashboard = () => {
   const [dailySales, setDailySales] = useState<DailySales[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"overview" | "sales" | "inventory" | "orders" | "ai">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "sales" | "inventory" | "orders" | "products" | "ai">("overview");
 
   useEffect(() => { fetchData(); }, []);
 
@@ -196,6 +197,7 @@ const Dashboard = () => {
             { key: "sales", label: "Sales", icon: DollarSign },
             { key: "inventory", label: "Inventory", icon: Package },
             { key: "orders", label: "Orders", icon: ShoppingBag },
+            { key: "products", label: "Add Products", icon: PlusCircle },
             { key: "ai", label: "AI Insights", icon: MessageCircle },
           ].map((tab) => (
             <button
@@ -219,6 +221,7 @@ const Dashboard = () => {
         {activeTab === "sales" && <SalesTab salesByProduct={salesByProduct} dailySales={dailySales} categoryRevenue={categoryRevenue} stats={stats} />}
         {activeTab === "inventory" && <InventoryTab inventory={inventory} />}
         {activeTab === "orders" && <OrdersTab orders={recentOrders} onUpdateStatus={updateOrderStatus} />}
+        {activeTab === "products" && <AddProductForm onProductAdded={fetchData} />}
         {activeTab === "ai" && <AIInsightsTab />}
       </div>
     </div>
