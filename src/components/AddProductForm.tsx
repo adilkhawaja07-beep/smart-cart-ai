@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 interface AddProductFormProps {
   onProductAdded?: () => void;
@@ -15,10 +16,11 @@ interface AddProductFormProps {
 const AddProductForm = ({ onProductAdded }: AddProductFormProps) => {
   const { data: categories } = useCategories();
   const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
   const [form, setForm] = useState({
     name: "", price: "", originalPrice: "", costPrice: "",
     unit: "each", badge: "", description: "", categoryId: "",
-    imageUrl: "", initialStock: "30", reorderLevel: "10",
+    initialStock: "30", reorderLevel: "10",
   });
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
@@ -40,7 +42,7 @@ const AddProductForm = ({ onProductAdded }: AddProductFormProps) => {
         badge: form.badge || null,
         description: form.description || null,
         category_id: form.categoryId || null,
-        image_url: form.imageUrl || null,
+        image_url: imageUrl || null,
         in_stock: true,
       }).select("id").single();
 
@@ -54,7 +56,8 @@ const AddProductForm = ({ onProductAdded }: AddProductFormProps) => {
       if (iErr) throw iErr;
 
       toast({ title: "Product Added", description: `${form.name} has been added successfully` });
-      setForm({ name: "", price: "", originalPrice: "", costPrice: "", unit: "each", badge: "", description: "", categoryId: "", imageUrl: "", initialStock: "30", reorderLevel: "10" });
+      setForm({ name: "", price: "", originalPrice: "", costPrice: "", unit: "each", badge: "", description: "", categoryId: "", initialStock: "30", reorderLevel: "10" });
+      setImageUrl("");
       onProductAdded?.();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -90,6 +93,10 @@ const AddProductForm = ({ onProductAdded }: AddProductFormProps) => {
             </select>
           </div>
           <div className="space-y-1.5">
+            <Label>Product Image</Label>
+            <ImageUpload bucket="product-images" onUploaded={setImageUrl} label="Upload product photo" />
+          </div>
+          <div className="space-y-1.5">
             <Label>Selling Price *</Label>
             <Input type="number" step="0.01" value={form.price} onChange={(e) => update("price", e.target.value)} placeholder="4.99" />
           </div>
@@ -108,10 +115,6 @@ const AddProductForm = ({ onProductAdded }: AddProductFormProps) => {
           <div className="space-y-1.5">
             <Label>Badge</Label>
             <Input value={form.badge} onChange={(e) => update("badge", e.target.value)} placeholder="Sale, Organic, Premium" />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Image URL</Label>
-            <Input value={form.imageUrl} onChange={(e) => update("imageUrl", e.target.value)} placeholder="https://..." />
           </div>
           <div className="space-y-1.5">
             <Label>Description</Label>
