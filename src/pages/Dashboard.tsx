@@ -221,6 +221,7 @@ const Dashboard = () => {
         {activeTab === "sales" && <SalesTab salesByProduct={salesByProduct} dailySales={dailySales} categoryRevenue={categoryRevenue} stats={stats} />}
         {activeTab === "inventory" && <InventoryTab inventory={inventory} />}
         {activeTab === "orders" && <OrdersTab orders={recentOrders} onUpdateStatus={updateOrderStatus} />}
+        {activeTab === "products" && <AddProductForm onProductAdded={fetchData} />}
         {activeTab === "ai" && <AIInsightsTab />}
       </div>
     </div>
