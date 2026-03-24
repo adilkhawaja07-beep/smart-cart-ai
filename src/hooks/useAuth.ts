@@ -9,29 +9,11 @@ export function useAuth() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const checkRole = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    const roles = data?.map((r: any) => r.role) || [];
-    setIsAdmin(roles.includes("admin"));
-  }, []);
-
-  const assignPendingAdminRole = useCallback(async (userId: string) => {
-    const pending = localStorage.getItem("pending_admin_role");
-    if (pending === "true") {
-      localStorage.removeItem("pending_admin_role");
-      // Check if already has admin role
-      const { data: existing } = await supabase
-        .from("user_roles")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("role", "admin");
-      if (!existing || existing.length === 0) {
-        await supabase.from("user_roles").insert({ user_id: userId, role: "admin" as any });
-      }
-      setIsAdmin(true);
-    }
+    const { data, error } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    setIsAdmin(!error && Boolean(data));
   }, []);
 
   useEffect(() => {
@@ -40,11 +22,7 @@ export function useAuth() {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // First assign pending admin role, then check roles
-          setTimeout(async () => {
-            await assignPendingAdminRole(session.user.id);
-            await checkRole(session.user.id);
-          }, 0);
+          await checkRole(session.user.id);
         } else {
           setIsAdmin(false);
         }
@@ -56,21 +34,25 @@ export function useAuth() {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await assignPendingAdminRole(session.user.id);
         await checkRole(session.user.id);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [checkRole, assignPendingAdminRole]);
+  }, [checkRole]);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    accountType: "customer" | "admin" = "customer"
+  ) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, account_type: accountType },
         emailRedirectTo: window.location.origin,
       },
     });
