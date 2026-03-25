@@ -1,6 +1,10 @@
 
 -- New categories
 INSERT INTO categories (id, name, description) VALUES
+  ('a1000000-0000-0000-0000-000000000001', 'Fresh Fruits', 'Fresh, seasonal, and organic fruits'),
+  ('a1000000-0000-0000-0000-000000000002', 'Vegetables', 'Fresh garden vegetables and produce'),
+  ('a1000000-0000-0000-0000-000000000003', 'Dairy & Eggs', 'Milk, yogurt, cheese, and eggs'),
+  ('a1000000-0000-0000-0000-000000000004', 'Bakery', 'Fresh breads, pastries, and baked goods'),
   ('a1000000-0000-0000-0000-000000000005', 'Meat & Seafood', 'Fresh cuts of meat and seafood'),
   ('a1000000-0000-0000-0000-000000000006', 'Beverages', 'Juices, water, coffee, and tea'),
   ('a1000000-0000-0000-0000-000000000007', 'Snacks & Chips', 'Crisps, nuts, and snack bars'),

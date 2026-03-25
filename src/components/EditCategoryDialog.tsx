@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { CategoryRepository } from "@/lib/repositories/productRepository";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ interface EditCategoryDialogProps {
 }
 
 const EditCategoryDialog = ({ category, open, onOpenChange, onSaved }: EditCategoryDialogProps) => {
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -36,13 +38,15 @@ const EditCategoryDialog = ({ category, open, onOpenChange, onSaved }: EditCateg
     }
     setLoading(true);
     try {
-      const { error } = await supabase.from("categories").update({
+      await CategoryRepository.updateCategory(category.id, {
         name: name.trim(),
         description: description.trim() || null,
         image_url: imageUrl || null,
-      }).eq("id", category.id);
-      if (error) throw error;
+      } as any);
       toast({ title: "Category Updated", description: `${name} has been updated` });
+      // Invalidate React Query caches to refresh data across the app
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       onSaved();
       onOpenChange(false);
     } catch (err: any) {

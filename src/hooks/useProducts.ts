@@ -38,7 +38,7 @@ export interface DbProduct {
   description: string | null;
   category_id: string | null;
   cost_price: number | null;
-  categories: { name: string } | null;
+  categories: { name: string; image_url: string | null } | null;
 }
 
 export interface DbCategory {
@@ -50,13 +50,17 @@ export interface DbCategory {
 
 // Map DB product to frontend Product shape
 export function mapDbProduct(p: DbProduct): Product {
+  // Use local category images only - simple fallback approach
+  const categoryName = p.categories?.name || "";
+  const imageUrl = categoryFallbackImages[categoryName] || "/placeholder.svg";
+  
   return {
     id: p.id,
     name: p.name,
     price: Number(p.price),
     originalPrice: p.original_price ? Number(p.original_price) : undefined,
-    image: p.image_url || categoryFallbackImages[p.categories?.name || ""] || "/placeholder.svg",
-    category: p.categories?.name || "Uncategorized",
+    image: imageUrl,
+    category: categoryName || "Uncategorized",
     badge: p.badge || undefined,
     unit: p.unit,
     inStock: p.in_stock,
@@ -67,9 +71,10 @@ export function useProducts() {
   return useQuery({
     queryKey: ["products"],
     queryFn: async () => {
+      // Fetch products with category info including image_url
       const { data, error } = await supabase
         .from("products")
-        .select("*, categories(name)")
+        .select("*, categories(name, image_url)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data as DbProduct[]).map(mapDbProduct);
@@ -86,7 +91,12 @@ export function useCategories() {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data as DbCategory[];
+      
+      // Use local images for all categories
+      return (data as DbCategory[]).map(cat => ({
+        ...cat,
+        image_url: categoryFallbackImages[cat.name] || "/placeholder.svg",
+      }));
     },
   });
 }
@@ -95,7 +105,8 @@ export function useProductsByCategory(categoryId: string | null) {
   return useQuery({
     queryKey: ["products", "category", categoryId],
     queryFn: async () => {
-      let query = supabase.from("products").select("*, categories(name)");
+      // Fetch products with category info including image_url
+      let query = supabase.from("products").select("*, categories(name, image_url)");
       if (categoryId) query = query.eq("category_id", categoryId);
       const { data, error } = await query.order("created_at", { ascending: false });
       if (error) throw error;
@@ -108,9 +119,10 @@ export function useSearchProducts(searchTerm: string) {
   return useQuery({
     queryKey: ["products", "search", searchTerm],
     queryFn: async () => {
+      // Fetch products with category info including image_url
       const { data, error } = await supabase
         .from("products")
-        .select("*, categories(name)")
+        .select("*, categories(name, image_url)")
         .ilike("name", `%${searchTerm}%`)
         .order("name");
       if (error) throw error;

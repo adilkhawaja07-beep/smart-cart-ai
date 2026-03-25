@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { CategoryRepository } from "@/lib/repositories/productRepository";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ const AddCategoryForm = ({ onCategoryAdded }: AddCategoryFormProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +28,15 @@ const AddCategoryForm = ({ onCategoryAdded }: AddCategoryFormProps) => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.from("categories").insert({
+      await CategoryRepository.createCategory({
         name: name.trim(),
         description: description.trim() || null,
         image_url: imageUrl || null,
       });
-      if (error) throw error;
+      
+      // Invalidate categories cache
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      
       toast({ title: "Category Added", description: `${name} has been created` });
       setName("");
       setDescription("");

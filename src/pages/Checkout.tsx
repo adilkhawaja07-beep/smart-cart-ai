@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
-import { placeOrder } from "@/lib/orderService";
+import { OrderRepository } from "@/lib/repositories/orderRepository";
+import { PricingService } from "@/lib/services/pricingService";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -23,9 +24,8 @@ const Checkout = () => {
     cardNumber: "", expiry: "", cvc: "",
   });
 
-  const deliveryFee = totalPrice >= 50 ? 0 : 4.99;
-  const tax = totalPrice * 0.08;
-  const grandTotal = totalPrice + deliveryFee + tax;
+  // Use PricingService for pricing calculations
+  const pricing = PricingService.calculatePricing(totalPrice);
 
   const updateForm = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -34,9 +34,9 @@ const Checkout = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await placeOrder(
+      await OrderRepository.createOrder({
         items,
-        {
+        details: {
           firstName: form.firstName,
           lastName: form.lastName,
           address: form.address,
@@ -44,11 +44,11 @@ const Checkout = () => {
           zipCode: form.zipCode,
           email: form.email || undefined,
         },
-        totalPrice,
-        deliveryFee,
-        tax,
-        grandTotal
-      );
+        subtotal: pricing.subtotal,
+        deliveryFee: pricing.deliveryFee,
+        tax: pricing.tax,
+        total: pricing.total,
+      });
       setPlaced(true);
       clearCart();
       toast({ title: "Order placed!", description: "Your fresh groceries are on the way 🥬" });
@@ -150,10 +150,10 @@ const Checkout = () => {
               <Separator className="my-4" />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${totalPrice.toFixed(2)}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Delivery</span><span>{deliveryFee === 0 ? "Free" : `$${deliveryFee.toFixed(2)}`}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>Tax</span><span>${tax.toFixed(2)}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Delivery</span><span>{pricing.deliveryFee === 0 ? "Free" : `$${pricing.deliveryFee.toFixed(2)}`}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>Tax</span><span>${pricing.tax.toFixed(2)}</span></div>
                 <Separator />
-                <div className="flex justify-between text-base font-bold text-foreground"><span>Total</span><span>${grandTotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base font-bold text-foreground"><span>Total</span><span>${pricing.total.toFixed(2)}</span></div>
               </div>
             </div>
           </div>

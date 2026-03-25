@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface CategoryCardProps {
   name: string;
@@ -13,7 +14,10 @@ const CategoryCard = ({ name, image, itemCount, index }: CategoryCardProps) => {
   const [imageSrc, setImageSrc] = useState(image || "/placeholder.svg");
 
   useEffect(() => {
-    setImageSrc(image || "/placeholder.svg");
+    // Use image URL as-is (versioning handled at data layer)
+    // No cache-busting needed - allows browser/CDN caching
+    const imageUrl = image || "/placeholder.svg";
+    setImageSrc(imageUrl);
   }, [image]);
 
   return (
@@ -27,11 +31,9 @@ const CategoryCard = ({ name, image, itemCount, index }: CategoryCardProps) => {
         className="group cursor-pointer overflow-hidden rounded-2xl bg-card shadow-sm transition-shadow hover:shadow-lg"
       >
         <div className="aspect-square overflow-hidden">
-          <img
+          <OptimizedImage
             src={imageSrc}
             alt={name}
-            loading="lazy"
-            decoding="async"
             width={640}
             height={640}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"

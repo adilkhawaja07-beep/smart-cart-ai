@@ -2,15 +2,30 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ImageVersionService } from "@/lib/services/imageVersionService";
 
 interface ImageUploadProps {
   bucket: string;
   onUploaded: (url: string) => void;
   currentUrl?: string;
   label?: string;
+  // Optional version tracking
+  productId?: string;
+  categoryId?: string;
+  recordVersions?: boolean;
+  onVersionRecorded?: (versionNumber: number) => void;
 }
 
-const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }: ImageUploadProps) => {
+const ImageUpload = ({
+  bucket,
+  onUploaded,
+  currentUrl,
+  label = "Upload Image",
+  productId,
+  categoryId,
+  recordVersions = false,
+  onVersionRecorded,
+}: ImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
   const inputId = useRef(`img-upload-${Math.random().toString(36).slice(2)}`).current;
@@ -31,6 +46,11 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
       return;
     }
 
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Image must be less than 5MB", variant: "destructive" });
+      return;
+    }
+
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
@@ -39,7 +59,7 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
       const uploadResult = await Promise.race([
         supabase.storage.from(bucket).upload(fileName, file),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Upload timed out. Please try again.")), 20000)
+          setTimeout(() => reject(new Error("Upload timed out. Please try again.")), 60000)
         ),
       ]);
 
@@ -48,11 +68,34 @@ const ImageUpload = ({ bucket, onUploaded, currentUrl, label = "Upload Image" }:
 
       const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
       const publicUrl = urlData.publicUrl;
+      
+      // Optionally record version
+      if (recordVersions && (productId || categoryId)) {
+        try {
+          const version = await ImageVersionService.recordImageVersion(
+            publicUrl,
+            `${bucket}/${fileName}`,
+            {
+              productId,
+              categoryId,
+              fileSize: file.size,
+              fileMimeType: file.type,
+            }
+          );
+          onVersionRecorded?.(version.version_number);
+        } catch (versionErr) {
+          console.warn("Failed to record image version:", versionErr);
+          // Don't fail upload just because version recording failed
+        }
+      }
+      
       setPreview(publicUrl);
       onUploaded(publicUrl);
       toast({ title: "Image uploaded", description: "Image uploaded successfully" });
     } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      console.error("Image upload error:", err);
+      const errorMsg = err.message || err.error_description || "Unknown error occurred";
+      toast({ title: "Unable to upload", description: errorMsg, variant: "destructive" });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";

@@ -29,7 +29,10 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
   const [imageSrc, setImageSrc] = useState(product.image || "/placeholder.svg");
 
   useEffect(() => {
-    setImageSrc(product.image || "/placeholder.svg");
+    // Use image URL as-is (versioning handled at data layer)
+    // No cache-busting needed - allows browser/CDN caching
+    const imageUrl = product.image || "/placeholder.svg";
+    setImageSrc(imageUrl);
   }, [product.image]);
 
   const discount = product.originalPrice

@@ -19,7 +19,15 @@ import About from "./pages/About";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60, // Data is stale after 1 minute
+      gcTime: 1000 * 60 * 5, // Cache garbage collected after 5 minutes
+      refetchOnWindowFocus: true, // Refetch when window regains focus
+    },
+  },
+});
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isAdmin, loading } = useAuth();
