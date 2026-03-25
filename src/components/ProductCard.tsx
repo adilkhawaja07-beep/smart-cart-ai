@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,14 +26,8 @@ interface ProductCardProps {
 const ProductCard = ({ product, index }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toast } = useToast();
+  // FIX 1: Remove useEffect — just use product.image directly
   const [imageSrc, setImageSrc] = useState(product.image || "/placeholder.svg");
-
-  useEffect(() => {
-    // Use image URL as-is (versioning handled at data layer)
-    // No cache-busting needed - allows browser/CDN caching
-    const imageUrl = product.image || "/placeholder.svg";
-    setImageSrc(imageUrl);
-  }, [product.image]);
 
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
@@ -45,18 +39,18 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
   };
 
   return (
+    // FIX 2: Change whileInView to animate so cards render immediately
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.08, duration: 0.5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.4 }}
       className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-lg"
     >
       <div className="relative aspect-square overflow-hidden bg-muted">
         <img
           src={imageSrc}
           alt={product.name}
-          loading="lazy"
+          // FIX 3: Remove loading="lazy" — load images eagerly like hero
           decoding="async"
           width={400}
           height={400}

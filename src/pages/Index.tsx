@@ -10,6 +10,8 @@ import { motion } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
+import { CategoryCardSkeleton } from "@/components/CategoryCardSkeleton";
 
 // Fallback images for categories that don't have image_url set
 import categoryFruits from "@/assets/category-fruits.jpg";
@@ -40,6 +42,16 @@ const Index = () => {
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
 
+  // Helper to get category image with case-insensitive lookup
+  const getCategoryImage = (categoryName: string, imageUrl: string | null): string => {
+    if (imageUrl) return imageUrl;
+    
+    const matchedKey = Object.keys(categoryImages).find(
+      key => key.toLowerCase() === categoryName.toLowerCase()
+    );
+    return matchedKey ? categoryImages[matchedKey] : "/placeholder.svg";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -63,14 +75,18 @@ const Index = () => {
             </Link>
           </div>
           {categoriesLoading ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <CategoryCardSkeleton key={i} />
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
               {categories?.map((cat, i) => (
                 <CategoryCard
                   key={cat.id}
                   name={cat.name}
-                  image={cat.image_url || categoryImages[cat.name] || "/placeholder.svg"}
+                  image={cat.image_url}
                   itemCount={products?.filter((p) => p.category === cat.name).length || 0}
                   index={i}
                 />
@@ -97,7 +113,11 @@ const Index = () => {
             </Link>
           </div>
           {productsLoading ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
               {products?.slice(0, 8).map((product, i) => (

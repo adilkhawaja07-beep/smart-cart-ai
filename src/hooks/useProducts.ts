@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Product } from "@/components/ProductCard";
+import { productImages } from "@/hooks/productImages";
 
 import categoryFruits from "@/assets/category-fruits.jpg";
 import categoryVegetables from "@/assets/category-vegetables.jpg";
@@ -50,9 +51,23 @@ export interface DbCategory {
 
 // Map DB product to frontend Product shape
 export function mapDbProduct(p: DbProduct): Product {
-  // Use local category images only - simple fallback approach
+  // Use local product images first, fallback to category images
   const categoryName = p.categories?.name || "";
-  const imageUrl = categoryFallbackImages[categoryName] || "/placeholder.svg";
+  
+  // Case-insensitive product image lookup
+  const productImageKey = Object.keys(productImages).find(
+    key => key.toLowerCase() === p.name.toLowerCase()
+  );
+  
+  // Case-insensitive category image lookup
+  const categoryImageKey = Object.keys(categoryFallbackImages).find(
+    key => key.toLowerCase() === categoryName.toLowerCase()
+  );
+  
+  const imageUrl = 
+    (productImageKey ? productImages[productImageKey] : null) || 
+    (categoryImageKey ? categoryFallbackImages[categoryImageKey] : null) || 
+    "/placeholder.svg";
   
   return {
     id: p.id,
@@ -92,11 +107,16 @@ export function useCategories() {
         .order("name");
       if (error) throw error;
       
-      // Use local images for all categories
-      return (data as DbCategory[]).map(cat => ({
-        ...cat,
-        image_url: categoryFallbackImages[cat.name] || "/placeholder.svg",
-      }));
+      // Use local images for all categories with case-insensitive lookup
+      return (data as DbCategory[]).map(cat => {
+        const categoryImageKey = Object.keys(categoryFallbackImages).find(
+          key => key.toLowerCase() === cat.name.toLowerCase()
+        );
+        return {
+          ...cat,
+          image_url: (categoryImageKey ? categoryFallbackImages[categoryImageKey] : null) || "/placeholder.svg",
+        };
+      });
     },
   });
 }

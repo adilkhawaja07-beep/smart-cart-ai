@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { useCategories, useProducts } from "@/hooks/useProducts";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import { CategoryCardSkeleton } from "@/components/CategoryCardSkeleton";
 
 import categoryFruits from "@/assets/category-fruits.jpg";
 import categoryVegetables from "@/assets/category-vegetables.jpg";
@@ -43,8 +44,10 @@ const Categories = () => {
         <h1 className="mb-8 font-display text-3xl font-bold text-foreground md:text-4xl">Shop by Category</h1>
 
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <CategoryCardSkeleton key={i} />
+            ))}
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -63,7 +66,7 @@ const Categories = () => {
                   >
                     <div className="aspect-[16/10] overflow-hidden">
                       <img
-                        src={cat.image_url || categoryImages[cat.name] || "/placeholder.svg"}
+                        src={cat.image_url}
                         alt={cat.name}
                         loading="lazy"
                         decoding="async"

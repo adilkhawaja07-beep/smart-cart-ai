@@ -7,6 +7,7 @@ import { useProducts, useCategories } from "@/hooks/useProducts";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal, Loader2, ArrowLeft } from "lucide-react";
+import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 
 type SortOption = "name" | "price-asc" | "price-desc" | "newest";
 
@@ -121,7 +122,11 @@ const Shop = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="py-20 text-center">
             <p className="text-lg font-semibold text-foreground">No products found</p>
